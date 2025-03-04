@@ -1,48 +1,9 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление заданиями</title>
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-    <h1>Список заданий</h1>
-    <button onclick="createTask()">➕ Добавить задание</button>
-    <ul id="task-list"></ul>
+{% extends "base.html" %}
 
-    <script>
-        async function loadTasks() {
-            const response = await fetch("/admin/tasks");
-            const tasks = await response.json();
-            const taskList = document.getElementById("task-list");
-            taskList.innerHTML = "";
-            tasks.forEach(task => {
-                const li = document.createElement("li");
-                li.textContent = task.description;
-                taskList.appendChild(li);
-            });
-        }
-        
-        async function createTask() {
-            const description = prompt("Введите описание задания:");
-            if (!description) return;
-            
-            const response = await fetch("/admin/tasks", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ description })
-            });
-            
-            if (response.ok) {
-                alert("Задание создано!");
-                loadTasks();
-            } else {
-                alert("Ошибка при создании задания");
-            }
-        }
+{% block title %}Управление заданиями{% endblock %}
 
-        loadTasks();
-    </script>
-</body>
-</html>
+{% block content %}
+<h1>Список заданий</h1>
+<button onclick="createTask()">➕ Добавить задание</button>
+<ul id="task-list"></ul>
+{% endblock %}

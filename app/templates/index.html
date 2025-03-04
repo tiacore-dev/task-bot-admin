@@ -1,16 +1,14 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админка</title>
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-    <h1>Панель администратора</h1>
-    <nav>
-        <a href="/tasks">📌 Управление заданиями</a>
-        <a href="/users">👤 Пользователи</a>
-    </nav>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Главная - Админка{% endblock %}
+
+{% block content %}
+    <section class="dashboard">
+        <h2>Добро пожаловать, администратор!</h2>
+        <p>Выберите, что хотите делать:</p>
+        <div class="menu">
+            <a href="/tasks" class="card">📌 Управление заданиями</a>
+            <a href="/users" class="card">👤 Управление пользователями</a>
+        </div>
+    </section>
+{% endblock %}

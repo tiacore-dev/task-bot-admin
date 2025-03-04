@@ -1,5 +1,5 @@
 from tortoise.exceptions import DoesNotExist
-from database.models import User
+from app.database.models import User
 
 
 async def get_user_by_telegram_id(telegram_id: int):

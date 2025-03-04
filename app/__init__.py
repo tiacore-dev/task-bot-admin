@@ -20,14 +20,13 @@ def create_app() -> FastAPI:
     )
 
     # 📌 Подключаем статику для фронта
-    app.mount(
-        "/static", StaticFiles(directory="admin_app/frontend/static"), name="static")
+    app.mount("/static", StaticFiles(directory="app/static"), name="static")
     app.state.settings = Settings()
    # Конфигурация Tortoise ORM
     register_tortoise(
         app,
         db_url=Settings.DATABASE_URL,
-        modules={"models": ["database.models"]},
+        modules={"models": ["app.database.models"]},
         # generate_schemas=True,
         add_exception_handlers=True,
     )

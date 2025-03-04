@@ -28,9 +28,9 @@ async def create_admin_user():
 app = create_app()
 
 
-@app.on_event("startup")
-async def startup_event():
-    await create_admin_user()
+# @app.on_event("startup")
+# async def startup_event():
+#     await create_admin_user()
 
 # 📌 Запуск Uvicorn
 if __name__ == "__main__":
