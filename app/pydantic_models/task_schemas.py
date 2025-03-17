@@ -26,6 +26,7 @@ class TaskSchema(BaseModel):
     creator_id: UUID4
     platform_id: UUID4
     task_type_id: str
+    task_name: str  # 🔥 Новое поле
     description: str
     reward: Decimal
     verification_type: str
@@ -34,10 +35,15 @@ class TaskSchema(BaseModel):
 # Создание задания
 
 
+class TaskResponseSchema(BaseModel):
+    task_id: UUID4
+
+
 class TaskCreateSchema(BaseModel):
-    creator_id: UUID4
+    # creator_id: UUID4
     platform_id: UUID4
     task_type_id: str
+    task_name: str  # 🔥 Новое поле
     description: str
     reward: Decimal
     verification_type: str
@@ -47,6 +53,7 @@ class TaskCreateSchema(BaseModel):
 
 
 class TaskUpdateSchema(BaseModel):
+    task_name: Optional[str] = None  # 🔥 Новое поле
     description: Optional[str] = None
     reward: Optional[Decimal] = None
     status_id: Optional[str] = None

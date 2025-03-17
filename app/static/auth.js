@@ -13,39 +13,34 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function login() {
-    const formData = new FormData(document.getElementById("login-form"));
-    const response = await fetch("/auth/token", {
-        method: "POST",
-        body: formData
-    });
+    const username = document.querySelector("input[name='username']").value;
+    const password = document.querySelector("input[name='password']").value;
 
-    const data = await response.json();
-    if (response.ok) {
-        localStorage.setItem("jwt_token", data.access_token);
-        window.location.href = "/admin";
-    } else {
-        alert("Ошибка входа: " + data.detail);
+    console.log("📤 Отправляем JSON на /auth/token:", { username, password });
+
+    try {
+        const response = await fetch("/auth/token", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+        console.log("📥 Ответ от сервера:", data);
+
+        if (response.ok) {
+            localStorage.setItem("access_token", data.access_token);
+            localStorage.setItem("refresh_token", data.refresh_token);
+            window.location.href = "/";
+
+        } else {
+            alert("Ошибка входа: " + data.detail);
+        }
+    } catch (error) {
+        console.error("❌ Ошибка запроса:", error);
     }
 }
 
-async function checkToken() {
-    const token = localStorage.getItem("jwt_token");
-    if (!token) {
-        window.location.href = "/login";
-        return;
-    }
 
-    const response = await fetch("/protected", {
-        headers: { "Authorization": `Bearer ${token}` }
-    });
-
-    if (!response.ok) {
-        localStorage.removeItem("jwt_token");
-        window.location.href = "/login";
-    }
-}
-
-function logout() {
-    localStorage.removeItem("jwt_token");
-    window.location.href = "/login";
-}

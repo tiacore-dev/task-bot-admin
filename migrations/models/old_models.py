@@ -42,10 +42,10 @@ class User(Model):
     user_id = fields.UUIDField(pk=True, default=uuid.uuid4)
     telegram_id = fields.BigIntField(unique=True)
     username = fields.CharField(max_length=255, null=True)
-    role = fields.ForeignKeyField("models.UserRole", related_name="users")
+    role = fields.ForeignKeyField("diff_models.UserRole", related_name="users")
     balance = fields.DecimalField(max_digits=10, decimal_places=2, default=0)
     referrer = fields.ForeignKeyField(
-        "models.User", related_name="referrals", null=True)
+        "diff_models.User", related_name="referrals", null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
 
 # Аккаунты пользователей на платформах
@@ -56,7 +56,7 @@ class UserAccount(Model):
         table = "user_accounts"
 
     account_id = fields.BigIntField(pk=True)
-    user = fields.ForeignKeyField("models.User", related_name="accounts")
+    user = fields.ForeignKeyField("diff_models.User", related_name="accounts")
     platform = fields.CharField(max_length=100)
     account_name = fields.CharField(max_length=255)
     social_id = fields.CharField(max_length=255, unique=True)
@@ -116,16 +116,16 @@ class Task(Model):
     task_id = fields.UUIDField(pk=True, default=uuid.uuid4)
     task_name = fields.CharField(max_length=255)
     creator = fields.ForeignKeyField(
-        "models.AdminUser", related_name="tasks_created")
+        "diff_models.AdminUser", related_name="tasks_created")
     platform = fields.ForeignKeyField(
-        "models.TaskPlatform", related_name="tasks")
-    task_type = fields.ForeignKeyField("models.TaskType", related_name="tasks")
+        "diff_models.TaskPlatform", related_name="tasks")
+    task_type = fields.ForeignKeyField("diff_models.TaskType", related_name="tasks")
     description = fields.TextField()
     reward = fields.DecimalField(max_digits=10, decimal_places=2)
     verification_type = fields.CharField(
         max_length=50, choices=["auto", "manual", "screenshot"])
     created_at = fields.DatetimeField(auto_now_add=True)
-    status = fields.ForeignKeyField("models.TaskStatus", related_name="tasks")
+    status = fields.ForeignKeyField("diff_models.TaskStatus", related_name="tasks")
 
 # Полученные задания (исполнитель взял задание)
 
@@ -135,10 +135,10 @@ class TaskAssignment(Model):
         table = "task_assignments"
 
     assignment_id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    user = fields.ForeignKeyField("models.User", related_name="tasks")
-    task = fields.ForeignKeyField("models.Task", related_name="assignments")
+    user = fields.ForeignKeyField("diff_models.User", related_name="tasks")
+    task = fields.ForeignKeyField("diff_models.Task", related_name="assignments")
     assigned_profile = fields.ForeignKeyField(
-        "models.UserAccount", related_name="assigned_tasks")
+        "diff_models.UserAccount", related_name="assigned_tasks")
     submitted_at = fields.DatetimeField(null=True)
     status = fields.CharField(max_length=50, choices=[
                               "in_progress", "pending_review", "completed", "rejected"], default="in_progress")
@@ -152,7 +152,7 @@ class TaskVerification(Model):
 
     verification_id = fields.UUIDField(pk=True, default=uuid.uuid4)
     task_assignment = fields.ForeignKeyField(
-        "models.TaskAssignment", related_name="verifications")
+        "diff_models.TaskAssignment", related_name="verifications")
     check_date = fields.DatetimeField(auto_now_add=True)
     status = fields.CharField(max_length=50, choices=[
                               "pending", "approved", "rejected"], default="pending")
@@ -166,10 +166,23 @@ class Transaction(Model):
         table = "transactions"
 
     transaction_id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    user = fields.ForeignKeyField("models.User", related_name="transactions")
+    user = fields.ForeignKeyField("diff_models.User", related_name="transactions")
     amount = fields.DecimalField(max_digits=10, decimal_places=2)
     transaction_type = fields.CharField(
         max_length=50, choices=["credit", "debit", "withdraw"])
     task = fields.ForeignKeyField(
-        "models.Task", related_name="transactions", null=True)
+        "diff_models.Task", related_name="transactions", null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
+
+from tortoise import Model, fields
+
+MAX_VERSION_LENGTH = 255
+
+
+class Aerich(Model):
+    version = fields.CharField(max_length=MAX_VERSION_LENGTH)
+    app = fields.CharField(max_length=20)
+
+    class Meta:
+        ordering = ["-id"]
+

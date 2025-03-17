@@ -13,7 +13,7 @@ async def serve_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
-@frontend_router.get("/admin", response_class=HTMLResponse)
+@frontend_router.get("/tasks", response_class=HTMLResponse)
 async def serve_tasks(request: Request):
     return templates.TemplateResponse("tasks.html", {"request": request})
 

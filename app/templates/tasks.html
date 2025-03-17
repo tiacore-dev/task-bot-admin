@@ -4,6 +4,58 @@
 
 {% block content %}
 <h1>Список заданий</h1>
-<button onclick="createTask()">➕ Добавить задание</button>
-<ul id="task-list"></ul>
+<button class="btn btn-primary" onclick="openTaskModal()">➕ Добавить задание</button>
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Вознаграждение</th>
+            <th>Тип проверки</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody id="task-list"></tbody>
+</table>
+
+<!-- Модальное окно для создания и редактирования задания -->
+<div id="taskModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title">Создать задание</h2>
+        <form id="task-form">
+            <input type="hidden" id="task-id">
+
+            <label>Название задания:</label>
+            <input type="text" id="task-name" class="form-control" required>
+
+            <label>Описание:</label>
+            <textarea id="task-description" class="form-control" required></textarea>
+
+            <label>Вознаграждение:</label>
+            <input type="number" id="task-reward" class="form-control" required min="0.01" step="0.01">
+
+            <label>Тип проверки:</label>
+            <select id="task-verification" class="form-control"></select>
+
+            <label>Статус задания:</label>
+            <select id="task-status" class="form-control"></select>
+
+            <label>Платформа:</label>
+            <select id="task-platform" class="form-control"></select>
+
+            <label>Тип задания:</label>
+            <select id="task-type" class="form-control"></select>
+
+            <button type="submit" class="btn btn-success mt-2">💾 Сохранить</button>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+<script src="/static/tasks.js"></script>
 {% endblock %}

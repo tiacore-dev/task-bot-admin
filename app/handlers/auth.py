@@ -1,89 +1,103 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import HTTPException, Security, status
+from fastapi.security import HTTPAuthorizationCredentials
 from loguru import logger
-from config import Settings
-from app.database import User
-
-settings = Settings()
+from app.config import Settings
+from app.database.models import AdminUser
+from app.auth_schemas import bearer_scheme
 
 # Конфигурация JWT
+settings = Settings()
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
-ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
-
-# Создание токена
+ACCESS_TOKEN_EXPIRE_MINUTES = int(settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+REFRESH_TOKEN_EXPIRE_DAYS = int(settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
 
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
+# Создание токенов
+def create_access_token(username: str, admin_id: str, expires_delta: timedelta = None):
+    expire = datetime.utcnow() + \
+        (expires_delta if expires_delta else timedelta(
+            minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+
+    to_encode = {
+        "sub": username,  # Логин
+        "admin_id": admin_id,  # ID администратора
+        "exp": expire
+    }
+
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    logger.info(f"Created JWT: {encoded_jwt}")
+    logger.info(f"✅ Создан Access JWT для {username} (admin_id={admin_id})")
     return encoded_jwt
 
+
+def create_refresh_token(username: str, admin_id: str):
+    return create_access_token(username, admin_id, timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+
+
 # Проверка токена
+def get_current_user(credentials: HTTPAuthorizationCredentials = Security(bearer_scheme)) -> dict:
+    """
+    Проверяет токен из заголовка Authorization и возвращает словарь с admin_id и username.
+    """
+    if credentials is None:
+        logger.warning("❌ Запрос без токена! Отправляем 401")
+        raise HTTPException(status_code=401, detail="Missing token")
+
+    if not credentials.credentials:
+        logger.warning("❌ Пустой токен! Отправляем 401")
+        raise HTTPException(status_code=401, detail="Empty token")
+
+    token = credentials.credentials
+    return verify_token(token)
 
 
-def verify_token(token: str = Depends(oauth2_scheme)):
+def verify_token(token: str) -> dict:
+    logger.info(f"Проверка токена: {token}")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        if username is None:
+        admin_id: str = payload.get("admin_id")
+
+        if username is None or admin_id is None:
+            logger.warning("Некорректный токен: отсутствуют sub или admin_id")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
             )
-        return username
+
+        logger.success(
+            f"Токен валиден, username: {username}, admin_id: {admin_id}")
+        return {"username": username, "admin_id": admin_id}
     except JWTError as exc:
+        logger.error("Ошибка JWT-декодирования")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
         ) from exc
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-    """ Декодирует токен и получает объект пользователя """
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-
-        user = await User.get_or_none(username=username)
-        if user is None:
-            raise HTTPException(status_code=401, detail="User not found")
-
-        return user
-    except JWTError as exc:
-        raise HTTPException(status_code=401, detail="Invalid token") from exc
-
-
-async def get_current_admin(user: User = Depends(get_current_user)) -> User:
-    """ Проверяет, является ли пользователь админом """
-    if user.role != "admin":
-        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
-    return user
-
-
 async def login_handler(username: str, password: str):
-    user = await User.filter(username=username).first()
-    if user and user.check_password(password):
-        return {"access_token": create_access_token({"sub": username})}
-    raise HTTPException(status_code=401, detail="Invalid credentials")
-
-
-async def require_admin(user: User = Depends(get_current_user)):
     """
-    Проверяет, является ли пользователь администратором.ij,
+    Проверяет логин и пароль, если верно — возвращает access и refresh токены.
     """
-    if user.role != 'admin':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Недостаточно прав для доступа"
-        )
-    return user
+    user = await AdminUser.filter(username=username).first()
+
+    if not user:
+        return None  # Возвращаем None, если пользователь не найден
+
+    check_password = user.check_password(password)
+    if check_password:
+        # Принудительно приводим admin_id к строке (UUID не всегда правильно кодируется)
+        admin_id_str = str(user.admin_id)
+
+        access_token = create_access_token(
+            username, admin_id_str, expires_delta=timedelta(
+                minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+        refresh_token = create_refresh_token(
+            username, admin_id_str)
+
+        return {"access_token": access_token, "refresh_token": refresh_token}
+
+    return None  # Возвращаем None, если пароль неверный
