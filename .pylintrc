@@ -11,7 +11,8 @@ disable=logging-format-interpolation,
         line-too-long,
         logging-fstring-interpolation,
         import-outside-toplevel,
-        broad-exception-caught
+        broad-exception-caught,
+        unused-argument
 
 [FORMAT]
 # Настройки форматирования кода

@@ -1,0 +1,11 @@
+{
+  "upgrade": [
+    "ALTER TABLE \"user_accounts\" ADD \"platform_id\" UUID NOT NULL",
+    "CREATE TABLE IF NOT EXISTS \"userlog\" (\n    \"log_id\" UUID NOT NULL PRIMARY KEY,\n    \"action\" VARCHAR(255) NOT NULL,\n    \"timestamp\" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    \"task_id\" UUID REFERENCES \"tasks\" (\"task_id\") ON DELETE CASCADE,\n    \"user_id\" UUID NOT NULL REFERENCES \"users\" (\"user_id\") ON DELETE CASCADE\n);"
+  ],
+  "downgrade": [
+    "ALTER TABLE \"user_accounts\" ALTER COLUMN \"platform\" TYPE VARCHAR(100)",
+    "ALTER TABLE \"user_accounts\" DROP COLUMN \"platform_id\"",
+    "DROP TABLE IF EXISTS \"userlog\""
+  ]
+}

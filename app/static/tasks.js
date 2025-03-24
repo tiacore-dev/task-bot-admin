@@ -24,15 +24,15 @@ async function loadMetaData() {
     
     try {
         // Загружаем статусы заданий
-        let response = await fetchWithAuth("/admin/meta/task_statuses", { headers: { "Authorization": `Bearer ${token}` } });
+        let response = await fetchWithAuth("/api/meta/task_statuses", { headers: { "Authorization": `Bearer ${token}` } });
         if (response.ok) taskStatuses = await response.json();
 
         // Загружаем типы заданий
-        response = await fetchWithAuth("/admin/meta/task_types", { headers: { "Authorization": `Bearer ${token}` } });
+        response = await fetchWithAuth("/api/meta/task_types", { headers: { "Authorization": `Bearer ${token}` } });
         if (response.ok) taskTypes = await response.json();
 
         // Загружаем платформы
-        response = await fetchWithAuth("/admin/meta/platforms", { headers: { "Authorization": `Bearer ${token}` } });
+        response = await fetchWithAuth("/api/meta/platforms", { headers: { "Authorization": `Bearer ${token}` } });
         if (response.ok) taskPlatforms = await response.json();
 
     } catch (error) {
@@ -47,7 +47,7 @@ async function loadTasks() {
         return;
     }
 
-    const response = await fetchWithAuth("/admin/tasks", {
+    const response = await fetchWithAuth("/api/tasks", {
         headers: { "Authorization": `Bearer ${token}` }
     });
 
@@ -160,7 +160,7 @@ document.getElementById("task-form").addEventListener("submit", async function (
 
     console.log("📤 Отправляем на сервер:", JSON.stringify(taskData, null, 2)); // 🔥 Логируем данные
 
-    const url = task_id ? `/admin/tasks/${task_id}` : "/admin/tasks";
+    const url = task_id ? `/api/tasks/${task_id}` : "/api/tasks";
     const method = task_id ? "PATCH" : "POST";
 
     const response = await fetchWithAuth(url, {
@@ -197,7 +197,7 @@ async function deleteTask(task_id) {
 
     if (!confirm("Вы уверены, что хотите удалить это задание?")) return;
 
-    const response = await fetchWithAuth(`/admin/tasks/${task_id}`, {
+    const response = await fetchWithAuth(`/api/tasks/${task_id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
     });

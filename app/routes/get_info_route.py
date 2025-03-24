@@ -4,7 +4,7 @@ from app.database.models import TaskStatus, AdminUser, UserRole, TaskType, TaskP
 from app.handlers.auth import get_current_user
 
 
-admin_meta_router = APIRouter(prefix="/admin/meta", tags=["admin_meta"])
+admin_meta_router = APIRouter(prefix="/api/meta", tags=["admin_meta"])
 
 
 @admin_meta_router.get("/task_statuses")

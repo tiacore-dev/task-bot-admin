@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+<h1>Пользователи</h1>
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Логин</th>
+            <th>Дата регистрации</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody id="user-list"></tbody>
+</table>
+
+<script src="/static/users.js"></script>
+{% endblock %}

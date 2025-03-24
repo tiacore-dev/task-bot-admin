@@ -55,11 +55,12 @@ class UserAccount(Model):
     class Meta:
         table = "user_accounts"
 
-    account_id = fields.BigIntField(pk=True)
+    account_id = fields.UUIDField(pk=True, default=uuid.uuid4)
     user = fields.ForeignKeyField("diff_models.User", related_name="accounts")
-    platform = fields.CharField(max_length=100)
+    platform = fields.ForeignKeyField(
+        "diff_models.TaskPlatform", related_name="user_accounts")  # ✅ ForeignKey
     account_name = fields.CharField(max_length=255)
-    social_id = fields.CharField(max_length=255, unique=True)
+    account_platform_id = fields.CharField(max_length=255, unique=True)
     created_at = fields.DatetimeField(auto_now_add=True)
 
 # Платформы для заданий
@@ -153,10 +154,11 @@ class TaskVerification(Model):
     verification_id = fields.UUIDField(pk=True, default=uuid.uuid4)
     task_assignment = fields.ForeignKeyField(
         "diff_models.TaskAssignment", related_name="verifications")
-    check_date = fields.DatetimeField(auto_now_add=True)
+    check_date = fields.DatetimeField(null=True)
     status = fields.CharField(max_length=50, choices=[
                               "pending", "approved", "rejected"], default="pending")
     details = fields.TextField(null=True)
+    s3_name = fields.CharField(max_length=255, null=True)
 
 # Начисления пользователям
 
@@ -173,6 +175,19 @@ class Transaction(Model):
     task = fields.ForeignKeyField(
         "diff_models.Task", related_name="transactions", null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
+
+
+class UserLog(Model):
+    log_id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    user = fields.ForeignKeyField("diff_models.User", related_name="logs")
+    # Например: "создал задание", "изменил статус"
+    action = fields.CharField(max_length=255)
+    timestamp = fields.DatetimeField(auto_now_add=True)
+    task = fields.ForeignKeyField(
+        "diff_models.Task", related_name="logs", null=True)  # Если связано с заданием
+
+    def __str__(self):
+        return f"{self.user.username} - {self.action} - {self.timestamp}"
 
 from tortoise import Model, fields
 

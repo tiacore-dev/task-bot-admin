@@ -1,0 +1,39 @@
+{
+  "upgrade": [
+    "ALTER TABLE \"user_accounts\" ADD COLUMN \"account_id_tmp\" UUID DEFAULT gen_random_uuid() NOT NULL",
+    "ALTER TABLE \"task_assignments\" ADD COLUMN \"assigned_profile_id_tmp\" UUID",
+
+    "ALTER TABLE \"task_assignments\" DROP CONSTRAINT IF EXISTS \"task_assignments_assigned_profile_id_fkey\"",
+    "ALTER TABLE \"user_accounts\" DROP CONSTRAINT IF EXISTS \"user_accounts_pkey\"",
+
+    "ALTER TABLE \"task_assignments\" DROP COLUMN \"assigned_profile_id\"",
+    "ALTER TABLE \"user_accounts\" DROP COLUMN \"account_id\"",
+
+    "ALTER TABLE \"user_accounts\" RENAME COLUMN \"account_id_tmp\" TO \"account_id\"",
+    "ALTER TABLE \"task_assignments\" RENAME COLUMN \"assigned_profile_id_tmp\" TO \"assigned_profile_id\"",
+
+    "ALTER TABLE \"user_accounts\" ADD PRIMARY KEY (\"account_id\")",
+
+    "ALTER TABLE \"task_assignments\" ADD CONSTRAINT \"task_assignments_assigned_profile_id_fkey\" FOREIGN KEY (\"assigned_profile_id\") REFERENCES \"user_accounts\" (\"account_id\")",
+
+    "ALTER TABLE \"user_accounts\" DROP COLUMN IF EXISTS \"platform\"",
+    "ALTER TABLE \"user_accounts\" ADD CONSTRAINT \"user_accounts_platform_id_fkey\" FOREIGN KEY (\"platform_id\") REFERENCES \"task_platforms\" (\"platform_id\") ON DELETE CASCADE"
+  ],
+  "downgrade": [
+    "ALTER TABLE \"user_accounts\" ADD COLUMN \"account_id_tmp\" BIGINT",
+    "ALTER TABLE \"task_assignments\" ADD COLUMN \"assigned_profile_id_tmp\" BIGINT",
+
+    "ALTER TABLE \"task_assignments\" DROP CONSTRAINT IF EXISTS \"task_assignments_assigned_profile_id_fkey\"",
+    "ALTER TABLE \"user_accounts\" DROP CONSTRAINT IF EXISTS \"user_accounts_pkey\"",
+    "ALTER TABLE \"user_accounts\" DROP CONSTRAINT IF EXISTS \"user_accounts_platform_id_fkey\"",
+
+    "ALTER TABLE \"task_assignments\" DROP COLUMN \"assigned_profile_id\"",
+    "ALTER TABLE \"user_accounts\" DROP COLUMN \"account_id\"",
+
+    "ALTER TABLE \"user_accounts\" RENAME COLUMN \"account_id_tmp\" TO \"account_id\"",
+    "ALTER TABLE \"task_assignments\" RENAME COLUMN \"assigned_profile_id_tmp\" TO \"assigned_profile_id\"",
+
+    "ALTER TABLE \"user_accounts\" ADD PRIMARY KEY (\"account_id\")",
+    "ALTER TABLE \"task_assignments\" ADD CONSTRAINT \"task_assignments_assigned_profile_id_fkey\" FOREIGN KEY (\"assigned_profile_id\") REFERENCES \"user_accounts\" (\"account_id\")"
+  ]
+}

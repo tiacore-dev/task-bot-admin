@@ -1,0 +1,10 @@
+{
+  "upgrade": [
+    "ALTER TABLE \"task_verifications\" ALTER COLUMN \"check_date\" DROP NOT NULL",
+    "ALTER TABLE \"task_verifications\" ADD \"s3_name\" VARCHAR(255)"
+  ],
+  "downgrade": [
+    "ALTER TABLE \"task_verifications\" ALTER COLUMN \"check_date\" SET NOT NULL",
+    "ALTER TABLE \"task_verifications\" DROP COLUMN \"s3_name\""
+  ]
+}

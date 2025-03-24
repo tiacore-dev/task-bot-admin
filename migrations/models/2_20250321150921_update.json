@@ -1,0 +1,8 @@
+{
+  "upgrade": [
+    "ALTER TABLE \"user_accounts\" RENAME COLUMN \"social_id\" TO \"account_platform_id\""
+  ],
+  "downgrade": [
+    "ALTER TABLE \"user_accounts\" RENAME COLUMN \"account_platform_id\" TO \"social_id\""
+  ]
+}

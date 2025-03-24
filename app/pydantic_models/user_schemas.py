@@ -17,9 +17,9 @@ class UserSchema(BaseModel):
     user_id: UUID4
     telegram_id: int
     username: Optional[str]
-    role_id: str
+    role: str
     balance: Decimal
-    referrer_id: Optional[UUID4]
+    referrer: Optional[UUID4]
 
 # Создание пользователя
 

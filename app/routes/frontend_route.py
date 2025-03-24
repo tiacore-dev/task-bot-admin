@@ -21,3 +21,15 @@ async def serve_tasks(request: Request):
 @frontend_router.get("/", response_class=HTMLResponse)
 async def serve_index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+# 🔥 Добавляем страницу со списком пользователей
+@frontend_router.get("/users", response_class=HTMLResponse)
+async def serve_users(request: Request):
+    return templates.TemplateResponse("users.html", {"request": request})
+
+
+# 🔥 Добавляем страницу детального просмотра пользователя
+@frontend_router.get("/users/{user_id}", response_class=HTMLResponse)
+async def serve_user_detail(request: Request, user_id: str):
+    return templates.TemplateResponse("user_detail.html", {"request": request, "user_id": user_id})

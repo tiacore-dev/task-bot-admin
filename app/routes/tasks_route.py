@@ -1,10 +1,10 @@
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, Depends
-from app.database.models import Task
+from app.database.models import Task, TaskAssignment
 from app.pydantic_models.task_schemas import TaskCreateSchema, TaskSchema, TaskUpdateSchema, TaskResponseSchema
 from app.handlers.auth import get_current_user
 
-admin_tasks_router = APIRouter(prefix="/admin/tasks", tags=["admin_tasks"])
+admin_tasks_router = APIRouter(prefix="/api/tasks", tags=["admin_tasks"])
 
 # 📌 Создание нового задания (только для админов)
 
@@ -51,3 +51,38 @@ async def delete_task(task_id: UUID, admin=Depends(get_current_user)):
 
     await task.delete()
     return {"message": "Задание удалено"}
+
+
+@admin_tasks_router.post("/{task_id}/approve")
+async def approve_task(task_id: UUID, admin=Depends(get_current_user)):
+    assignment = await TaskAssignment.get_or_none(task_id=task_id)
+
+    if not assignment:
+        raise HTTPException(status_code=404, detail="Задание не найдено")
+
+    if assignment.status != "pending_review":
+        raise HTTPException(
+            status_code=400, detail="Задание ещё не на проверке")
+
+    # 🟢 Начисляем награду пользователю
+    assignment.status = "completed"
+    await assignment.save()
+
+    return {"message": "Задание подтверждено"}
+
+
+@admin_tasks_router.post("/{task_id}/reject")
+async def reject_task(task_id: UUID, admin=Depends(get_current_user)):
+    assignment = await TaskAssignment.get_or_none(task_id=task_id)
+
+    if not assignment:
+        raise HTTPException(status_code=404, detail="Задание не найдено")
+
+    if assignment.status != "pending_review":
+        raise HTTPException(
+            status_code=400, detail="Задание ещё не на проверке")
+
+    assignment.status = "rejected"
+    await assignment.save()
+
+    return {"message": "Задание отклонено"}
